@@ -36,7 +36,12 @@ public class LoginServlet extends HttpServlet {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // 登录成功，跳转到首页
+                // 登录成功，设置session信息
+                HttpSession session = request.getSession();
+                session.setAttribute("userId", rs.getInt("id"));
+                session.setAttribute("username", rs.getString("username"));
+
+                // 跳转到首页
                 response.sendRedirect("index.jsp");
             } else {
                 // 登录失败，弹窗提示并跳回登录页

@@ -12,6 +12,7 @@
 - 🌈 多语言支持（中文/英文）
 - 🔐 用户登录系统
 - 💳 订单支付功能（下单后可扫码支付）
+- 💬 饮品评价系统（用户可以对饮品进行评分和评价）
 
 ## 饮品与配料
 
@@ -40,6 +41,13 @@
 - 选择果汁时，配料选项只显示冰块和糖
 - 选择奶茶时，配料选项显示所有配料（冰块、珍珠、椰果、布丁、糖）
 
+### 💬 评价系统功能
+- **星级评分**：用户可以对饮品进行1-5星评分
+- **文字评价**：支持详细的文字评价内容
+- **评价统计**：显示每种饮品的平均评分和评价数量
+- **评价列表**：查看所有用户对特定饮品的评价
+- **用户关联**：评价与用户账号关联，支持用户管理
+
 ## 技术栈
 
 - **后端**: Java Servlet, JSP
@@ -47,6 +55,7 @@
 - **构建工具**: Maven
 - **服务器**: Jetty (开发环境)
 - **设计模式**: 工厂模式、装饰器模式
+- **前端**: HTML5, CSS3, JavaScript, JSTL
 
 ## 快速开始
 
@@ -87,6 +96,7 @@ mvn jetty:run
 
 - 应用地址: http://localhost:8080/VendingMachineWeb
 - 登录页面: http://localhost:8080/VendingMachineWeb/login.jsp
+- 评价页面: http://localhost:8080/VendingMachineWeb/review.jsp
 
 #### 使用流程
 
@@ -96,12 +106,20 @@ mvn jetty:run
 4. **设置数量**：输入配料份数（默认为1）
 5. **提交订单**：点击提交查看订单详情
 6. **支付订单**：点击支付按钮完成购买
+7. **评价饮品**：点击评价按钮对饮品进行评分和评价
 
 #### 支付体验
 
 1. 登录后下单，提交订单后会出现"支付"按钮。
 2. 点击"支付"按钮会跳转到支付页面，显示订单信息和应付金额。
 3. 页面下方有收款二维码（可自定义替换图片）。
+
+#### 评价体验
+
+1. 提交订单后，点击"评价"按钮进入评价页面。
+2. 选择星级评分（1-5星）。
+3. 填写详细的评价内容。
+4. 提交评价后可以查看所有用户对该饮品的评价。
 
 ### 5. 默认登录信息
 
@@ -115,10 +133,35 @@ mvn jetty:run
 ### 数据库结构
 
 ```sql
+-- 用户表
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(100) NOT NULL
+    password VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 评价表
+CREATE TABLE reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    beverage_type VARCHAR(50) NOT NULL,
+    beverage_name VARCHAR(100) NOT NULL,
+    decorators TEXT,
+    rating INT NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 评价统计表
+CREATE TABLE review_stats (
+    beverage_type VARCHAR(50) PRIMARY KEY,
+    beverage_name VARCHAR(100) NOT NULL,
+    total_reviews INT DEFAULT 0,
+    avg_rating DECIMAL(3,2) DEFAULT 0.00,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
 
@@ -137,6 +180,7 @@ VendingMachineWeb/
 │   ├── controller/          # 控制器层
 │   │   ├── LoginServlet.java
 │   │   ├── ShopService.java
+│   │   ├── ReviewServlet.java
 │   │   ├── NoBeverage.java
 │   │   └── NoDecorator.java
 │   ├── factory/            # 工厂模式实现
@@ -155,13 +199,17 @@ VendingMachineWeb/
 │   │   ├── PearlDecorator.java  # 珍珠
 │   │   ├── CoconutDecorator.java # 椰果
 │   │   ├── PuddingDecorator.java # 布丁
-│   │   └── SugarDecorator.java   # 糖
+│   │   ├── SugarDecorator.java   # 糖
+│   │   ├── Review.java           # 评价实体
+│   │   └── ReviewStats.java      # 评价统计实体
 │   └── util/               # 工具类
 │       ├── DBUtil.java
-│       └── DBInitializer.java
+│       ├── DBInitializer.java
+│       └── ReviewDAO.java        # 评价数据访问对象
 ├── src/main/webapp/        # Web资源
 │   ├── index.jsp          # 主页面
 │   ├── login.jsp          # 登录页面
+│   ├── review.jsp         # 评价页面
 │   ├── pay.jsp            # 支付页面
 │   └── WEB-INF/
 │       └── web.xml        # Web配置
@@ -181,6 +229,10 @@ VendingMachineWeb/
 - `Decorator`: 配料基类，继承自Beverage
 - 各种配料类：通过装饰器模式动态添加配料功能
 
+### 数据访问对象模式 (DAO Pattern)
+- `ReviewDAO`: 封装评价相关的数据库操作
+- 提供统一的数据库访问接口
+
 ## 打包部署
 
 项目可以打包为WAR文件部署到任何支持Java Web的服务器：
@@ -198,10 +250,18 @@ mvn clean package
 3. 请根据实际情况修改数据库连接配置
 4. 建议在生产环境中使用连接池优化性能
 5. 饮品与配料的联动逻辑在前端JavaScript中实现
+6. 评价系统需要用户登录后才能使用
 
 ## 更新日志
 
-### v2.0.0 (最新)
+### v2.1.0 (最新)
+- ✨ 新增饮品评价系统
+- 💬 支持星级评分和文字评价
+- 📊 添加评价统计功能
+- 🔗 评价与用户账号关联
+- 🎨 优化评价页面UI设计
+
+### v2.0.0
 - ✨ 新增果汁和奶茶饮品
 - ✨ 新增珍珠、椰果、布丁、糖配料
 - 🔄 实现饮品与配料的智能联动

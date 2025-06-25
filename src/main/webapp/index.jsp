@@ -618,7 +618,10 @@
             </div>
             <!-- 支付按钮，初始隐藏，主form外部 -->
             <div style="display:none; margin-top: 20px; text-align: center;" id="pay-btn-container">
-                <button id="pay-btn" class="glass-button" style="width: 200px; font-size: 1.2rem;">💳 支付</button>
+                <button id="pay-btn" class="glass-button"
+                    style="width: 200px; font-size: 1.2rem; margin-right: 10px;">💳 支付</button>
+                <button id="review-btn" class="glass-button"
+                    style="width: 200px; font-size: 1.2rem; background: rgba(255, 255, 255, 0.25);">💬 评价</button>
             </div>
             <script>
                 // 判断是否有订单，如果没有则显示提示
@@ -639,6 +642,7 @@
                         if (payBtnContainer) payBtnContainer.style.display = '';
                     }
                 });
+
                 // 支付按钮点击事件，POST跳转到pay.jsp
                 document.addEventListener('DOMContentLoaded', function () {
                     var payBtn = document.getElementById('pay-btn');
@@ -665,7 +669,84 @@
                             form.submit();
                         }
                     }
+
+                    // 评价按钮点击事件
+                    var reviewBtn = document.getElementById('review-btn');
+                    if (reviewBtn) {
+                        reviewBtn.onclick = function (e) {
+                            e.preventDefault();
+                            goToReview();
+                        }
+                    }
                 });
+
+                // 跳转到评价页面
+                function goToReview() {
+                    var desc = document.querySelectorAll('.result-value')[0].innerText.trim();
+                    var price = document.querySelectorAll('.result-value')[1].innerText.trim();
+
+                    if (desc && desc !== 'null') {
+                        // 解析饮品信息
+                        var beverageInfo = parseBeverageInfo(desc);
+
+                        // 跳转到评价页面
+                        var url = 'review?beverageType=' + beverageInfo.type +
+                            '&beverageName=' + encodeURIComponent(beverageInfo.name) +
+                            '&decorators=' + encodeURIComponent(beverageInfo.decorators);
+                        window.location.href = url;
+                    } else {
+                        alert(currentLang === 'zh' ? '请先选择饮品' : 'Please select a drink first');
+                    }
+                }
+
+                // 解析饮品描述，提取饮品类型、名称和配料
+                function parseBeverageInfo(desc) {
+                    var beverageInfo = {
+                        type: '',
+                        name: '',
+                        decorators: ''
+                    };
+
+                    // 提取饮品名称
+                    if (desc.includes('可乐')) {
+                        beverageInfo.type = 'coca';
+                        beverageInfo.name = '可乐';
+                    } else if (desc.includes('咖啡')) {
+                        beverageInfo.type = 'coffee';
+                        beverageInfo.name = '咖啡';
+                    } else if (desc.includes('果汁')) {
+                        beverageInfo.type = 'juice';
+                        beverageInfo.name = '果汁';
+                    } else if (desc.includes('奶茶')) {
+                        beverageInfo.type = 'milktea';
+                        beverageInfo.name = '奶茶';
+                    }
+
+                    // 提取配料信息
+                    var decoratorList = [];
+                    if (desc.includes('冰块')) {
+                        decoratorList.push('冰块');
+                    }
+                    if (desc.includes('牛奶')) {
+                        decoratorList.push('牛奶');
+                    }
+                    if (desc.includes('珍珠')) {
+                        decoratorList.push('珍珠');
+                    }
+                    if (desc.includes('椰果')) {
+                        decoratorList.push('椰果');
+                    }
+                    if (desc.includes('布丁')) {
+                        decoratorList.push('布丁');
+                    }
+                    if (desc.includes('糖')) {
+                        decoratorList.push('糖');
+                    }
+
+                    beverageInfo.decorators = decoratorList.join('、');
+
+                    return beverageInfo;
+                }
             </script>
         </body>
 
