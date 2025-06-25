@@ -9,14 +9,17 @@ public class MilkDecorator extends Decorator {
     public MilkDecorator(Beverage beverage) {
         this.beverage = beverage;
     }
+
     @Override
-    /* 这里返回饮料的信息和装饰者本身的信息，
-    Milk 是该装饰者(MilkDecorator)的描述，0.5 是价格。 */
+    /*
+     * 这里返回饮料的信息和装饰者本身的信息，
+     * Milk 是该装饰者(MilkDecorator)的描述，0.5 是价格。
+     */
     public String getDescription() {
-        return beverage.getDescription()+" 加 Milk";
+        return beverage.getDescription() + " + 牛奶";
     }
 
     public double getCost() {
-        return beverage.getCost()+0.5;
+        return beverage.getCost() + 0.5;
     }
 }

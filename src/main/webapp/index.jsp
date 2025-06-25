@@ -333,10 +333,16 @@
                         productPlaceholder: '请选择饮品',
                         productCoca: '🥤可乐（￥1.0）',
                         productCoffee: '☕咖啡（￥2.0）',
+                        productJuice: '🍹果汁（￥2.5）',
+                        productMilkTea: '🧋奶茶（￥3.0）',
                         decoratorLabel: '✨ 您需要给饮料加的配料是：',
                         decoratorPlaceholder: '请选择配料',
                         decoratorIce: '🧊冰块（￥0.5）',
                         decoratorMilk: '🥛牛奶（￥0.5）',
+                        decoratorPearl: '🟤珍珠（￥1.0）',
+                        decoratorCoconut: '🥥椰果（￥1.0）',
+                        decoratorPudding: '🍮布丁（￥1.0）',
+                        decoratorSugar: '🍯糖（￥0.2）',
                         numLabel: '🔢 配料可以加多份(不填默认为 1 份)：',
                         numPlaceholder: '💫 请输入份数...',
                         submit: '🚀 提交订单',
@@ -352,10 +358,16 @@
                         productPlaceholder: 'Please select a drink',
                         productCoca: '🥤Coca (￥1.0)',
                         productCoffee: '☕Coffee (￥2.0)',
+                        productJuice: '🍹Juice (￥2.5)',
+                        productMilkTea: '🧋Milk Tea (￥3.0)',
                         decoratorLabel: '✨ Add-ons for your drink:',
                         decoratorPlaceholder: 'Please select add-on',
                         decoratorIce: '🧊Ice (￥0.5)',
                         decoratorMilk: '🥛Milk (￥0.5)',
+                        decoratorPearl: '🟤Pearl (￥1.0)',
+                        decoratorCoconut: '🥥Coconut (￥1.0)',
+                        decoratorPudding: '🍮Pudding (￥1.0)',
+                        decoratorSugar: '🍯Sugar (￥0.2)',
                         numLabel: '🔢 Add-on quantity (default 1):',
                         numPlaceholder: '💫 Enter quantity...',
                         submit: '🚀 Submit Order',
@@ -368,6 +380,14 @@
                 };
                 let currentLang = localStorage.getItem('lang') || 'zh';
 
+                // 饮品与配料的联动配置
+                const drinkDecoratorMap = {
+                    'coca': ['ice', 'sugar'],
+                    'coffee': ['ice', 'milk', 'sugar'],
+                    'juice': ['ice', 'sugar'],
+                    'milktea': ['ice', 'pearl', 'coconut', 'pudding', 'sugar']
+                };
+
                 function setLang(lang) {
                     currentLang = lang;
                     const t = langData[currentLang];
@@ -376,10 +396,16 @@
                     document.getElementById('product-placeholder').innerText = t.productPlaceholder;
                     document.getElementById('product-coca').innerText = t.productCoca;
                     document.getElementById('product-coffee').innerText = t.productCoffee;
+                    document.getElementById('product-juice').innerText = t.productJuice;
+                    document.getElementById('product-milktea').innerText = t.productMilkTea;
                     document.getElementById('decorator-label').innerText = t.decoratorLabel;
                     document.getElementById('decorator-placeholder').innerText = t.decoratorPlaceholder;
                     document.getElementById('decorator-ice').innerText = t.decoratorIce;
                     document.getElementById('decorator-milk').innerText = t.decoratorMilk;
+                    document.getElementById('decorator-pearl').innerText = t.decoratorPearl;
+                    document.getElementById('decorator-coconut').innerText = t.decoratorCoconut;
+                    document.getElementById('decorator-pudding').innerText = t.decoratorPudding;
+                    document.getElementById('decorator-sugar').innerText = t.decoratorSugar;
                     document.getElementById('num-label').innerText = t.numLabel;
                     document.getElementById('num').placeholder = t.numPlaceholder;
                     document.getElementById('submit-btn').value = t.submit;
@@ -404,6 +430,7 @@
                         alert(currentLang === 'zh' ? "这里必须输入数字！" : "Please enter a number!");
                     }
                 }
+
                 function clearForm() {
                     document.querySelector('select[name="product"]').selectedIndex = 0;
                     document.querySelector('select[name="decorator"]').selectedIndex = 0;
@@ -416,9 +443,82 @@
                         noOrderEl.style.display = '';
                         noOrderEl.innerText = langData[currentLang].noOrder;
                     }
+                    // 重置配料选项
+                    updateDecoratorOptions('');
                 }
+
+                function updateDecoratorOptions(selectedDrink) {
+                    const decoratorSelect = document.querySelector('select[name="decorator"]');
+                    const currentValue = decoratorSelect.value;
+
+                    // 清空现有选项，保留占位符
+                    decoratorSelect.innerHTML = '<option id="decorator-placeholder" value="">' + langData[currentLang].decoratorPlaceholder + '</option>';
+
+                    if (selectedDrink && drinkDecoratorMap[selectedDrink]) {
+                        const allowedDecorators = drinkDecoratorMap[selectedDrink];
+
+                        // 添加允许的配料选项
+                        if (allowedDecorators.includes('ice')) {
+                            const option = document.createElement('option');
+                            option.id = 'decorator-ice';
+                            option.value = 'ice';
+                            option.innerText = langData[currentLang].decoratorIce;
+                            decoratorSelect.appendChild(option);
+                        }
+
+                        if (allowedDecorators.includes('milk')) {
+                            const option = document.createElement('option');
+                            option.id = 'decorator-milk';
+                            option.value = 'milk';
+                            option.innerText = langData[currentLang].decoratorMilk;
+                            decoratorSelect.appendChild(option);
+                        }
+
+                        if (allowedDecorators.includes('pearl')) {
+                            const option = document.createElement('option');
+                            option.id = 'decorator-pearl';
+                            option.value = 'pearl';
+                            option.innerText = langData[currentLang].decoratorPearl;
+                            decoratorSelect.appendChild(option);
+                        }
+
+                        if (allowedDecorators.includes('coconut')) {
+                            const option = document.createElement('option');
+                            option.id = 'decorator-coconut';
+                            option.value = 'coconut';
+                            option.innerText = langData[currentLang].decoratorCoconut;
+                            decoratorSelect.appendChild(option);
+                        }
+
+                        if (allowedDecorators.includes('pudding')) {
+                            const option = document.createElement('option');
+                            option.id = 'decorator-pudding';
+                            option.value = 'pudding';
+                            option.innerText = langData[currentLang].decoratorPudding;
+                            decoratorSelect.appendChild(option);
+                        }
+
+                        if (allowedDecorators.includes('sugar')) {
+                            const option = document.createElement('option');
+                            option.id = 'decorator-sugar';
+                            option.value = 'sugar';
+                            option.innerText = langData[currentLang].decoratorSugar;
+                            decoratorSelect.appendChild(option);
+                        }
+                    }
+                }
+
                 window.onload = function () {
                     setLang(currentLang);
+
+                    // 添加饮品选择变化监听
+                    const productSelect = document.querySelector('select[name="product"]');
+                    productSelect.addEventListener('change', function () {
+                        updateDecoratorOptions(this.value);
+                    });
+
+                    // 初始化配料选项
+                    updateDecoratorOptions('');
                 };
 
                 function validateForm() {
@@ -458,6 +558,10 @@
                                     .equals(request.getParameter("product")) ? "selected" : "" %>>🥤可乐（￥1.0）</option>
                                 <option id="product-coffee" value="coffee" <%="coffee"
                                     .equals(request.getParameter("product")) ? "selected" : "" %>>☕咖啡（￥2.0）</option>
+                                <option id="product-juice" value="juice" <%="juice"
+                                    .equals(request.getParameter("product")) ? "selected" : "" %>>🍹果汁（￥2.5）</option>
+                                <option id="product-milktea" value="milktea" <%="milktea"
+                                    .equals(request.getParameter("product")) ? "selected" : "" %>>🧋奶茶（￥3.0）</option>
                             </select>
                         </div>
 
@@ -469,6 +573,14 @@
                                     .equals(request.getParameter("decorator")) ? "selected" : "" %>>🧊冰块（￥0.5）</option>
                                 <option id="decorator-milk" value="milk" <%="milk"
                                     .equals(request.getParameter("decorator")) ? "selected" : "" %>>🥛牛奶（￥0.5）</option>
+                                <option id="decorator-pearl" value="pearl" <%="pearl"
+                                    .equals(request.getParameter("decorator")) ? "selected" : "" %>>🟤珍珠（￥1.0）</option>
+                                <option id="decorator-coconut" value="coconut" <%="coconut"
+                                    .equals(request.getParameter("decorator")) ? "selected" : "" %>>🥥椰果（￥1.0）</option>
+                                <option id="decorator-pudding" value="pudding" <%="pudding"
+                                    .equals(request.getParameter("decorator")) ? "selected" : "" %>>🍮布丁（￥1.0）</option>
+                                <option id="decorator-sugar" value="sugar" <%="sugar"
+                                    .equals(request.getParameter("decorator")) ? "selected" : "" %>>🍯糖（￥0.2）</option>
                             </select>
                         </div>
 
