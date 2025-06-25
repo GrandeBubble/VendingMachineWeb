@@ -504,16 +504,54 @@
                     </form>
                 </div>
             </div>
+            <!-- 支付按钮，初始隐藏，主form外部 -->
+            <div style="display:none; margin-top: 20px; text-align: center;" id="pay-btn-container">
+                <button id="pay-btn" class="glass-button" style="width: 200px; font-size: 1.2rem;">💳 支付</button>
+            </div>
             <script>
                 // 判断是否有订单，如果没有则显示提示
                 window.addEventListener('DOMContentLoaded', function () {
                     var descText = document.querySelector('.result-value').innerText.trim();
                     var noOrderEl = document.getElementById('no-order');
+                    var payBtnContainer = document.getElementById('pay-btn-container');
+                    // 订单信息
+                    var desc = document.querySelectorAll('.result-value')[0].innerText.trim();
+                    var price = document.querySelectorAll('.result-value')[1].innerText.trim();
                     if (noOrderEl && (!descText || descText === '' || descText === 'null')) {
                         noOrderEl.style.display = '';
                         noOrderEl.innerText = langData[currentLang].noOrder;
+                        if (payBtnContainer) payBtnContainer.style.display = 'none';
                     } else if (noOrderEl) {
                         noOrderEl.style.display = 'none';
+                        // 有订单才显示支付按钮
+                        if (payBtnContainer) payBtnContainer.style.display = '';
+                    }
+                });
+                // 支付按钮点击事件，POST跳转到pay.jsp
+                document.addEventListener('DOMContentLoaded', function () {
+                    var payBtn = document.getElementById('pay-btn');
+                    if (payBtn) {
+                        payBtn.onclick = function (e) {
+                            e.preventDefault();
+                            var desc = document.querySelectorAll('.result-value')[0].innerText.trim();
+                            var price = document.querySelectorAll('.result-value')[1].innerText.trim();
+                            // 创建form并POST
+                            var form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = 'pay.jsp';
+                            var inputDesc = document.createElement('input');
+                            inputDesc.type = 'hidden';
+                            inputDesc.name = 'description';
+                            inputDesc.value = desc;
+                            var inputPrice = document.createElement('input');
+                            inputPrice.type = 'hidden';
+                            inputPrice.name = 'price';
+                            inputPrice.value = price;
+                            form.appendChild(inputDesc);
+                            form.appendChild(inputPrice);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
                     }
                 });
             </script>
